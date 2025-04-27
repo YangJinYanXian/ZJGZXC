@@ -1,0 +1,30 @@
+version: '3.8'
+
+services:
+  vllm:
+    image: vllm/vllm-openai:v0.8.4
+    container_name: vllm1
+    runtime: nvidia
+    environment:
+      - VLLM_USE_V1=0
+    ports:
+      - "8001:8000"
+    ipc: host
+    volumes:
+      - /data02/YangXian/models/ZhipuAI/GLM-Z1-32B-0414:/workspace/models
+      - /data02/log:/var/log/vllm
+      - ./glm4.py:/usr/local/lib/python3.12/dist-packages/vllm/model_executor/models/glm4.py
+    command:
+      --model /workspace/models
+      --max-num-batched-tokens 131072
+      --tensor-parallel-size 4
+      --enable-auto-tool-choice
+      --tool-call-parser hermes
+      --api-key vllm
+      --served-model-name GLM-Z1-32B-0414
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - capabilities: [gpu]
+              device_ids: ['4', '5', '6', '7']
